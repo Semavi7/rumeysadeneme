@@ -1,0 +1,55 @@
+
+services:
+  # Veritabanı Servisi (PostgreSQL)
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    # 2. .env dosyasındaki değişkenleri buraya bağlayın
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5  
+
+  # Backend Servisi (Django)
+  backend:
+    build: ./backend
+    container_name: django_backend
+    env_file: .env
+    volumes:
+      - ./backend:/app # Kodu konteynere bağla (geliştirme için)
+    ports:
+      - "8000:8000" # Django'ya lokalden erişim (test için)
+    environment:
+      # 3. Django'nun doğru host'a (db) bağlanmasını sağlayın
+      DB_HOST: db
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn the_hive.wsgi:application --bind 0.0.0.0:8000"
+
+  # Frontend Servisi (React + Nginx)
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    ports:
+      - "3000:80" # Lokal port 3000'i Nginx'in 80 portuna bağla
+    depends_on:
+      - backend # Başlamadan önce backend'in hazır olmasını bekle
+
+volumes:
+  postgres_data: {}
