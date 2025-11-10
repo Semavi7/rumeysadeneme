@@ -45,11 +45,11 @@ services:
   # Frontend Servisi (React + Nginx)
   frontend:
     build: ./frontend
-    container_name: react_frontend
-    ports:
-      - "3001:81" # Lokal port 3000'i Nginx'in 80 portuna bağla
+    # container_name: react_frontend
+    # ports:
+    #   - "3001:81" 
     depends_on:
-      - backend # Başlamadan önce backend'in hazır olmasını bekle
+      - backend 
 
 volumes:
   postgres_data: {}
