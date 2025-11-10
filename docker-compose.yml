@@ -47,7 +47,7 @@ services:
     build: ./frontend
     container_name: react_frontend
     ports:
-      - "3000:80" # Lokal port 3000'i Nginx'in 80 portuna bağla
+      - "3001:81" # Lokal port 3000'i Nginx'in 80 portuna bağla
     depends_on:
       - backend # Başlamadan önce backend'in hazır olmasını bekle
 
