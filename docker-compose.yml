@@ -23,6 +23,9 @@ services:
   backend:
     build: ./backend
     container_name: django_backend
+    networks:
+      - internal_bridge # EKLE: Frontend'in backend'i bu isimle görmesi için
+      - dokploy-network # EKLE: Traefik ile iletişim için
     env_file: .env
     volumes:
       - ./backend:/app # Kodu konteynere bağla (geliştirme için)
@@ -49,7 +52,16 @@ services:
     # ports:
     #   - "3001:81" 
     depends_on:
-      - backend 
+      - backend
+    networks:
+      - internal_bridge # EKLE: Backend'i görebilmesi için KRİTİK!
+      - dokploy-network # EKLE: Traefik ile iletişim için 
 
 volumes:
   postgres_data: {}
+
+networks:
+  dokploy-network:  # Dokploy'un Traefik Ağı (Dışarıdan erişim ve SSL)
+    external: true
+  internal_bridge:  # Servislerin birbirini görmesi için özel bir ağ
+    driver: bridge
